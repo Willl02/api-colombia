@@ -37,7 +37,8 @@ const verificarSeguridad = (req, res, next) => {
 };
 
 // 1. RUTA PÚBLICA: Cualquiera puede ver las ciudades y pueblos
-app.get('/api/colombia', (req, res) => {
+// 1.1 RUTA DE CONSULTA: Ahora TAMBIÉN requiere la contraseña
+app.get('/api/colombia', verificarSeguridad, (req, res) => {
   res.json({
     exito: true,
     datos: colombiaData
