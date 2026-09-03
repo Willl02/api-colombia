@@ -1,89 +1,127 @@
 const express = require('express');
 const app = express();
 
-// Permite que la API lea datos enviados en formato JSON
+// Middleware para que el cliente interprete la respuesta como JSON
 app.use(express.json());
 
-// Clave secreta/Contraseña para modificar datos
-// (En producción la leerá de las variables de entorno)
-const API_SECRET_KEY = process.env.API_SECRET_KEY || "mi_clave_secreta_123";
-
-// Base de datos inicial en memoria
-let colombiaData = [
-  {
-    departamento: "Antioquia",
-    ciudades: ["Medellín"],
-    pueblos: ["Guatapé", "Jardín"]
+// Datos a exponer
+const responseData = {
+  "correlation_id": "00-948af74963de1122d18d401ff7f4d0ae-848450f9a49ed026-00",
+  "data": [
+    {
+      "status": "P",
+      "service_request_number": "Nro.000001",
+      "policy_holder": "Transportes Lima S.A.C.",
+      "registration_date": "2026-08-16T16:08:27",
+      "coverage": "Fallecimiento",
+      "insured_name": "CARLOS SUAREZ",
+      "license_plate": "SDFW123",
+      "occurrence_date": "2026-08-09T17:00:00",
+      "regulatory_deadline_value": 217,
+      "regulatory_deadline_color": "ROJO",
+      "claim_number": "SIN-001",
+      "claim_status": "PENDIENTE",
+      "service_request_id": "121",
+      "product": "SOAT",
+      "document_type": 1,
+      "document_number": "100123",
+      "full_name": "Juan Pérez"
+    },
+    {
+      "status": "A",
+      "service_request_number": "Nro.000002",
+      "policy_holder": "Logística Andina E.I.R.L.",
+      "registration_date": "2025-12-17T09:15:00",
+      "coverage": "Gastos médicos",
+      "insured_name": "MARIA GONZALEZ LOPEZ",
+      "license_plate": "ABC987",
+      "occurrence_date": "2025-12-15T10:30:00",
+      "regulatory_deadline_value": 45,
+      "regulatory_deadline_color": "VERDE",
+      "claim_number": "SIN SINIESTRO ASOCIADO",
+      "claim_status": "APROBADO",
+      "service_request_id": "122",
+      "product": "SOAT",
+      "document_type": 1,
+      "document_number": "100456",
+      "full_name": "María González"
+    },
+    {
+      "status": "P",
+      "service_request_number": "Nro.000003",
+      "policy_holder": "Servicios Generales del Sur S.A.",
+      "registration_date": "2026-08-18T14:22:10",
+      "coverage": "Gastos médicos",
+      "insured_name": "LUIS ALBERTO MENDOZA",
+      "license_plate": "XYZ456",
+      "occurrence_date": "2026-08-14T08:00:00",
+      "regulatory_deadline_value": 110,
+      "regulatory_deadline_color": "AMARILLO",
+      "claim_number": "SIN-002",
+      "claim_status": "EN_REVISION",
+      "service_request_id": "123",
+      "product": "SOAT",
+      "document_type": 1,
+      "document_number": "100789",
+      "full_name": "Luis Mendoza"
+    },
+    {
+      "status": "C",
+      "service_request_number": "Nro.000004",
+      "policy_holder": "Particular",
+      "registration_date": "2026-08-19T11:45:00",
+      "coverage": "Fallecimiento",
+      "insured_name": "ANA MARIA TORRES",
+      "license_plate": "MNO654",
+      "occurrence_date": "2025-12-18T22:15:00",
+      "regulatory_deadline_value": 15,
+      "regulatory_deadline_color": "VERDE",
+      "claim_number": "SIN-003",
+      "claim_status": "CERRADO",
+      "service_request_id": "124",
+      "product": "SOAT",
+      "document_type": 2,
+      "document_number": "100101",
+      "full_name": "Ana Torres"
+    },
+    {
+      "status": "P",
+      "service_request_number": "Nro.000005",
+      "policy_holder": "Inversiones R&R Corp S.A.C.",
+      "registration_date": "2026-08-20T17:00:30",
+      "coverage": "Gestor de sepelio",
+      "insured_name": "JORGE RAMIREZ SILVA",
+      "license_plate": "JKL321",
+      "occurrence_date": "2025-12-19T19:40:00",
+      "regulatory_deadline_value": 180,
+      "regulatory_deadline_color": "ROJO",
+      "claim_number": "SIN-004",
+      "claim_status": "PENDIENTE",
+      "service_request_id": "125",
+      "product": "SOAT",
+      "document_type": 1,
+      "document_number": "100102",
+      "full_name": "Jorge Ramírez"
+    }
+  ],
+  "meta": {
+    "pagination": {
+      "total_items": 25,
+      "limit_records": 5,
+      "page_number": 1
+    }
   },
-  {
-    departamento: "Cundinamarca",
-    ciudades: ["Bogotá"],
-    pueblos: ["Zipaquirá"]
+  "links": {
+    "self": "/api/v1/service-requests/query?page=1&limit=5",
+    "next": "/api/v1/service-requests/query?page=2&limit=5"
   }
-];
-
-// Middleware de seguridad: Protege las rutas que modifican información
-const verificarSeguridad = (req, res, next) => {
-  const claveEnviada = req.headers['x-api-key'];
-
-  if (!claveEnviada || claveEnviada !== API_SECRET_KEY) {
-    return res.status(401).json({
-      exito: false,
-      mensaje: "Acceso denegado. Contraseña incorrecta o no enviada."
-    });
-  }
-
-  next(); // Si la contraseña es correcta, continúa
 };
 
-// 1. RUTA PÚBLICA: Cualquiera puede ver las ciudades y pueblos
-// 1.1 RUTA DE CONSULTA: Ahora TAMBIÉN requiere la contraseña
-app.get('/api/colombia', verificarSeguridad, (req, res) => {
-  res.json({
-    exito: true,
-    datos: colombiaData
-  });
+// Ruta ajustada a la especificada en 'links'
+app.get('/api/v1/service-requests/query', (req, res) => {
+  res.json(responseData);
 });
 
-// 2. RUTA PROTEGIDA: Solo con contraseña se pueden agregar datos
-app.post('/api/colombia/agregar', verificarSeguridad, (req, res) => {
-  const { departamento, tipo, nombre } = req.body;
-
-  if (!departamento || !tipo || !nombre) {
-    return res.status(400).json({
-      exito: false,
-      mensaje: "Faltan datos. Debes enviar: departamento, tipo ('ciudad' o 'pueblo') y nombre."
-    });
-  }
-
-  // Buscar si el departamento ya existe
-  let depto = colombiaData.find(
-    d => d.departamento.toLowerCase() === departamento.toLowerCase()
-  );
-
-  // Si no existe, lo creamos
-  if (!depto) {
-    depto = { departamento, ciudades: [], pueblos: [] };
-    colombiaData.push(depto);
-  }
-
-  // Agregar según el tipo
-  if (tipo.toLowerCase() === 'ciudad') {
-    depto.ciudades.push(nombre);
-  } else if (tipo.toLowerCase() === 'pueblo') {
-    depto.pueblos.push(nombre);
-  } else {
-    return res.status(400).json({ exito: false, mensaje: "El tipo debe ser 'ciudad' o 'pueblo'." });
-  }
-
-  res.status(201).json({
-    exito: true,
-    mensaje: `${tipo} '${nombre}' agregado con éxito a ${departamento}.`,
-    datos: depto
-  });
-});
-
-// Configuración del puerto para funcionar localmente y en internet
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor activo en el puerto ${PORT}`);
